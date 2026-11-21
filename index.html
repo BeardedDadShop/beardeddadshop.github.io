@@ -291,9 +291,11 @@
   .linkbtn{font-size:14px;font-weight:700;color:var(--forest)}
 
   @media (prefers-reduced-motion: reduce){
-    *{animation:none!important;transition:none!important}
+    *:not(.cf){animation:none!important;transition:none!important}
     .snow{display:none}
+    #confetti .cf{animation:cfFade .95s ease-out forwards!important}
   }
+  @keyframes cfFade{0%{opacity:0}22%{opacity:1}100%{opacity:0}}
 
   @media print{
     .dock,.tabs,.sheet,.scrim,.toast,.addmini,.snow,.ribbon{display:none!important}
@@ -336,9 +338,8 @@
     0%{opacity:0;transform:translate3d(0,-6px,0) rotate(0deg) scale(.9)}
     14%{opacity:1}
     70%{opacity:.95}
-    100%{opacity:0;transform:translate3d(var(--dx,0px),118px,0) rotate(var(--rot,200deg)) scale(1)}
+    100%{opacity:0;transform:translate3d(var(--dx,0px),165px,0) rotate(var(--rot,200deg)) scale(1)}
   }
-  @media (prefers-reduced-motion: reduce){ #confetti{display:none} }
 </style>
 </head>
 <body>
@@ -882,6 +883,7 @@
     var p = editPersonId ? findPerson(editPersonId) : findPerson(whoId);
     if(!p){ toast("Pick who it is for"); return; }
 
+    var beforeSave = doneSet();
     if(editItemId){
       p.items = p.items.map(function(it){
         return it.id === editItemId ? { id:it.id, label:label, amount:amt, bought:boughtDraft } : it;
@@ -891,7 +893,7 @@
     }
 
     save(); closeSheet(); render();
-    toast(editItemId ? "Updated" : "Added to " + p.name);
+    if(!celebrate(beforeSave)) toast(editItemId ? "Updated" : "Added to " + p.name);
   }
 
   /* ---------- person sheet ---------- */
@@ -955,8 +957,39 @@
 
   /* ---------- toast ---------- */
   var toastEl = document.getElementById("toast"), toastT;
+  /* ---------- celebration on a finished person ---------- */
+  function doneSet(){
+    var s = {};
+    for(var i=0;i<state.people.length;i++){
+      var p = state.people[i];
+      if(p.items.length && p.items.every(function(x){ return x.bought; })) s[p.id] = true;
+    }
+    return s;
+  }
+  function celebrate(before){
+    var now = doneSet(), newly = [];
+    for(var id in now){ if(!before[id]){ var pp = findPerson(id); if(pp) newly.push(pp); } }
+    if(!newly.length) return false;
+    newly.slice(0,3).forEach(function(p, idx){
+      var fire = function(){
+        var el = document.querySelector('[data-person="' + p.id + '"]');
+        confetti(el ? el.getBoundingClientRect() : null, 26);
+        if(el){
+          el.classList.add("flash");
+          setTimeout(function(){ el.classList.remove("flash"); }, 1900);
+        }
+      };
+      if(idx === 0) fire(); else setTimeout(fire, idx * 160);
+    });
+    var allDone = state.people.length > 0 && state.people.every(function(x){
+      return x.items.length > 0 && x.items.every(function(i){ return i.bought; });
+    });
+    toast(allDone ? "Everyone's bought. Go put your feet up." : "All bought for " + newly[0].name);
+    return true;
+  }
+
   function confetti(rect, count){
-    if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var calm = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     var host = document.getElementById("confetti");
     if(!host) return;
     count = count || 22;
@@ -967,7 +1000,7 @@
     var colors = ["#E3C97F","#C9A227","#A3242E","#1F4A37","#FBF7EF","#7C1F2B"];
     for(var i=0;i<count;i++){
       var bit = document.createElement("i");
-      var size = 5 + Math.random()*5;
+      var size = 6 + Math.random()*6;
       bit.className = "cf";
       bit.style.left = Math.round(cx + (Math.random()-0.5)*spread) + "px";
       bit.style.top = Math.round(cy + (Math.random()-0.5)*14) + "px";
@@ -976,7 +1009,7 @@
       bit.style.background = colors[i % colors.length];
       bit.style.animationDelay = (Math.random()*0.2).toFixed(2) + "s";
       bit.style.animationDuration = (1.15 + Math.random()*0.75).toFixed(2) + "s";
-      bit.style.setProperty("--dx", Math.round((Math.random()-0.5)*120) + "px");
+      bit.style.setProperty("--dx", calm ? "0px" : (Math.round((Math.random()-0.5)*120) + "px"));
       bit.style.setProperty("--rot", Math.round(140 + Math.random()*220) + "deg");
       host.appendChild(bit);
       (function(node){
@@ -1070,19 +1103,9 @@
       person.items.forEach(function(it){ if(it.id === iid) target = it; });
       if(!target) return;
       if(t.closest(".tick")){
-        var wasDone = person.items.length > 0 && person.items.every(function(x){ return x.bought; });
+        var beforeTick = doneSet();
         target.bought = !target.bought; save(); render();
-        var isDone = person.items.length > 0 && person.items.every(function(x){ return x.bought; });
-        var allDone = state.people.length > 0 && state.people.every(function(pp){
-          return pp.items.length > 0 && pp.items.every(function(x){ return x.bought; });
-        });
-        if(isDone && !wasDone){
-          var cardEl = document.querySelector('[data-person="' + person.id + '"]');
-          confetti(cardEl ? cardEl.getBoundingClientRect() : null, 20);
-          toast(allDone ? "Everyone's bought. Go put your feet up." : "All bought for " + person.name);
-        } else {
-          toast(target.bought ? "Marked as bought" : "Back on the list");
-        }
+        if(!celebrate(beforeTick)) toast(target.bought ? "Marked as bought" : "Back on the list");
       } else {
         openSheet(pid, iid);
       }
@@ -1147,7 +1170,7 @@
     state: state,
     totals: totals, money: money, num: num, used: used, personLeft: personLeft,
     budgetLeft: function(){ return state.budget === null ? null : state.budget - totals().added; },
-    save: save, render: render, findPersonByName: findPersonByName, go: go, confetti: confetti
+    save: save, render: render, findPersonByName: findPersonByName, go: go, confetti: confetti, doneSet: doneSet, celebrate: celebrate
   };
 })();
 </script>
