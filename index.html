@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1E4A32">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Christmas Budget</title>
+<style>
+  :root{
+    --ink:#1A2620;
+    --paper:#FBF7EF;
+    --cloud:#F8F4EC;
+    --card:#FFFDF8;
+    --forest:#173A2B;
+    --forest-2:#1F4A37;
+    --forest-deep:#102B1F;
+    --burgundy:#7C1F2B;
+    --cranberry:#A3242E;
+    --gold:#C9A227;
+    --champagne:#E3C97F;
+    --gold-soft:#F2E4BE;
+    --muted:#6F6357;
+    --line:#E6DCC9;
+    --display:"Didot","Bodoni 72","Hoefler Text","Iowan Old Style",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --radius:20px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    min-height:100vh;
+  }
+  /* paper grain + soft seasonal light */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      radial-gradient(circle at 10% 6%, rgba(201,162,39,.12), transparent 40%),
+      radial-gradient(circle at 92% 2%, rgba(124,31,43,.09), transparent 38%),
+      radial-gradient(rgba(26,38,32,.05) 1px, transparent 1px);
+    background-size:auto,auto,4px 4px;
+    opacity:.9;
+  }
+  .app{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:0 16px 150px}
+  button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+  h1,h2,h3{margin:0;font-family:var(--display);font-weight:400;letter-spacing:.1px}
+  p{margin:0}
+
+  .screen{display:none}
+  .screen.active{display:block}
+
+  /* ---------- header ---------- */
+  .brandline{display:flex;align-items:center;justify-content:space-between;padding-top:18px}
+  .brand{
+    display:flex;align-items:center;gap:8px;
+    font-size:11px;letter-spacing:.26em;text-transform:uppercase;font-weight:700;color:var(--muted)
+  }
+  .brand svg{width:13px;height:13px;stroke:var(--gold)}
+  .saved{font-size:11.5px;color:var(--forest);opacity:0;transition:opacity .3s;font-weight:600;letter-spacing:.02em}
+  .saved.show{opacity:.85}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;overflow:hidden;margin-top:16px;
+    border-radius:26px;padding:24px 22px 26px;
+    background:
+      radial-gradient(120% 85% at 88% -12%, rgba(227,201,127,.24), transparent 56%),
+      radial-gradient(95% 65% at 6% 112%, rgba(163,36,46,.22), transparent 62%),
+      linear-gradient(168deg,#204F3A 0%,#183C2C 48%,#102B1F 100%);
+    color:#FBF7EF;
+    box-shadow:0 22px 44px -22px rgba(16,43,31,.6);
+    transition:background .4s ease,box-shadow .4s ease;
+  }
+  .hero::after{
+    content:"";position:absolute;inset:9px;border-radius:19px;
+    border:1px solid rgba(227,201,127,.28);pointer-events:none
+  }
+  .hero.over{
+    background:
+      radial-gradient(120% 85% at 88% -12%, rgba(227,201,127,.18), transparent 56%),
+      linear-gradient(168deg,#6E1B24 0%,#4A1119 52%,#2C0A10 100%);
+  }
+  .hero-top{display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative;z-index:2}
+  .hero-tag{font-size:10px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;color:rgba(251,247,239,.6)}
+  .hero-chip{
+    font-size:11.5px;font-weight:700;letter-spacing:.04em;
+    padding:6px 11px;border-radius:999px;
+    color:#F6E9C6;background:rgba(251,247,239,.12);
+    border:1px solid rgba(227,201,127,.35)
+  }
+  .cap{
+    position:relative;z-index:2;margin-top:22px;
+    font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;font-weight:700;color:#B9CFBE
+  }
+  .num{
+    position:relative;z-index:2;margin-top:6px;
+    font-family:var(--display);font-size:64px;line-height:.98;letter-spacing:-1.4px;color:#FDFAF2
+  }
+  .num.pop{animation:pop .34s cubic-bezier(.2,.8,.3,1)}
+  @keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.05)}100%{transform:scale(1)}}
+  .sub{position:relative;z-index:2;margin-top:9px;font-size:13.5px;color:rgba(251,247,239,.74);letter-spacing:.01em}
+  .bar{
+    position:relative;z-index:2;margin-top:18px;height:7px;border-radius:99px;
+    background:rgba(251,247,239,.16);overflow:hidden
+  }
+  .bar span{
+    display:block;height:100%;border-radius:99px;
+    background:linear-gradient(90deg,#F0DCA4,#C9A227);
+    transition:width .5s cubic-bezier(.2,.7,.2,1)
+  }
+  .hero.over .bar span{background:linear-gradient(90deg,#F3B7A4,#C0503F)}
+  .ribbon{
+    position:absolute;left:0;right:0;bottom:0;height:7px;z-index:1;
+    background:linear-gradient(90deg,#7C1F2B 0%,#A3242E 42%,#C9A227 100%);
+    opacity:.9
+  }
+  .snow{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1;opacity:.5}
+  .snow i{
+    position:absolute;top:-14px;width:3px;height:3px;border-radius:50%;
+    background:rgba(251,247,239,.9);animation:snowfall linear infinite
+  }
+  @keyframes snowfall{to{transform:translateY(360px)}}
+  .hero-deco{position:absolute;inset:0;width:100%;height:100%;opacity:.13;z-index:0}
+
+  /* ---------- stats ---------- */
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .stat{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 16px;
+    box-shadow:0 14px 26px -24px rgba(26,38,32,.8)
+  }
+  .stat .k{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .stat .v{font-family:var(--display);font-size:29px;line-height:1.1;margin-top:6px;color:var(--forest)}
+  .stat .n{font-size:11.5px;color:#8B8074;margin-top:2px}
+
+  /* ---------- sections ---------- */
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;margin:26px 2px 12px}
+  .sec-head h2{font-size:22px;letter-spacing:.1px}
+  .sec-head span{font-size:12.5px;color:var(--muted)}
+
+  /* ---------- person card ---------- */
+  .person{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:15px 16px 16px;margin-bottom:13px;
+    box-shadow:0 16px 30px -26px rgba(26,38,32,.85);
+    transition:border-color .25s,box-shadow .25s
+  }
+  .person.overcap{border-color:#EBC9C3;box-shadow:0 16px 30px -22px rgba(124,31,43,.5)}
+  .p-top{display:flex;align-items:center;gap:11px}
+  .avatar{
+    flex:0 0 40px;width:40px;height:40px;border-radius:50%;
+    display:grid;place-items:center;
+    background:#F5F0E1;border:1px solid #E4D8BD;
+    font-family:var(--display);font-size:14.5px;color:var(--forest);letter-spacing:.02em
+  }
+  .person.overcap .avatar{background:#FBE9E6;border-color:#EFCFC9;color:#8C1C27}
+  .p-name{
+    flex:1;text-align:left;font-family:var(--display);font-size:18.5px;
+    color:var(--ink);padding:6px 0;letter-spacing:.1px
+  }
+  .p-num{font-family:var(--display);font-size:18.5px;color:var(--forest);white-space:nowrap}
+  .person.overcap .p-num{color:#8C1C27}
+  .p-sub{font-size:12px;color:var(--muted);margin-top:5px;padding-left:51px}
+  .pbar{height:6px;border-radius:99px;background:#F0E8D8;overflow:hidden;margin-top:12px}
+  .pbar span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#2E7050,#173A2B);transition:width .45s cubic-bezier(.2,.7,.2,1)}
+  .person.overcap .pbar span{background:linear-gradient(90deg,#C0503F,#8C1C27)}
+  .items{margin-top:12px;border-top:1px solid #F1E9DA}
+  .item{
+    display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+    min-height:52px;padding:9px 2px;border-bottom:1px solid #F5EEE1
+  }
+  .item:last-child{border-bottom:0}
+  .item .tick{
+    flex:0 0 26px;width:26px;height:26px;border-radius:50%;
+    border:1.6px solid #DCCFB6;background:#fff;display:grid;place-items:center;
+    transition:background .2s,border-color .2s,transform .2s
+  }
+  .item .tick svg{width:13px;height:13px;opacity:0;transition:opacity .18s}
+  .item.done .tick{background:var(--forest);border-color:var(--forest);transform:scale(1.02)}
+  .item.done .tick svg{opacity:1}
+  .item .lab{flex:1;font-size:15px;color:var(--ink)}
+  .item.done .lab{color:#948A7C;text-decoration:line-through;text-decoration-thickness:1px}
+  .item .amt{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--forest)}
+  .item.done .amt{color:#948A7C}
+  .addmini{
+    display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 14px;margin-top:12px;
+    border-radius:12px;border:1px dashed #DCCFB6;background:#FBF7EF;
+    font-size:14px;font-weight:700;color:var(--forest)
+  }
+
+  /* ---------- empty ---------- */
+  .empty{
+    background:var(--card);border:1px dashed #DED2BA;border-radius:var(--radius);
+    padding:28px 22px;text-align:center
+  }
+  .empty svg{stroke:var(--gold);margin-bottom:10px}
+  .empty h3{font-size:18px}
+  .empty p{font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.45}
+
+  /* ---------- dock + tabs ---------- */
+  .dock{
+    position:fixed;left:0;right:0;bottom:0;z-index:20;
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top,rgba(251,247,239,.98),rgba(251,247,239,.86));
+    backdrop-filter:blur(14px);border-top:1px solid var(--line)
+  }
+  .dock-inner{max-width:520px;margin:0 auto}
+  .primary{
+    display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:56px;
+    border-radius:16px;background:linear-gradient(180deg,#22513C,#173A2B);color:#FBF7EF;
+    font-size:16px;font-weight:700;letter-spacing:.01em;
+    box-shadow:0 16px 28px -16px rgba(23,58,43,.75)
+  }
+  .primary:active{transform:translateY(1px)}
+  .tabs{display:flex;justify-content:space-around;margin-top:10px}
+  .tab{
+    flex:1;padding:8px 0 2px;font-size:12px;font-weight:700;letter-spacing:.06em;
+    text-transform:uppercase;color:#9A8F80
+  }
+  .tab.on{color:var(--forest)}
+  .tab.on::after{content:"";display:block;width:16px;height:2px;border-radius:2px;background:var(--gold);margin:6px auto 0}
+
+  /* ---------- sheet ---------- */
+  .scrim{
+    position:fixed;inset:0;background:rgba(16,43,31,.42);opacity:0;pointer-events:none;
+    transition:opacity .25s;z-index:30;backdrop-filter:blur(2px)
+  }
+  .scrim.on{opacity:1;pointer-events:auto}
+  .sheet{
+    position:fixed;left:0;right:0;bottom:0;z-index:31;
+    background:var(--card);border-radius:26px 26px 0 0;
+    padding:10px 20px calc(20px + env(safe-area-inset-bottom));
+    transform:translateY(103%);transition:transform .32s cubic-bezier(.2,.8,.2,1);
+    box-shadow:0 -24px 60px rgba(16,43,31,.28);max-height:92vh;overflow:auto
+  }
+  .sheet.on{transform:translateY(0)}
+  .grab{width:44px;height:4px;border-radius:99px;background:#E2D6BF;margin:0 auto 14px}
+  .sheet h2{font-size:23px}
+  .hint{font-size:13px;color:var(--muted);margin-top:6px;margin-bottom:18px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:7px}
+  .field input,.field select{
+    width:100%;min-height:56px;border:1.5px solid var(--line);border-radius:14px;
+    background:#FBF7EF;padding:0 15px;font-size:17px;color:var(--ink);font-family:var(--sans)
+  }
+  .field select{
+    appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236F6357' stroke-width='2' stroke-linecap='round'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat;background-position:right 16px center;padding-right:44px
+  }
+  .field input:focus,.field select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,162,39,.18)}
+  .field.money{position:relative}
+  .field.money .cur{position:absolute;left:15px;bottom:16px;font-size:17px;color:var(--muted);font-weight:600}
+  .field.money input{padding-left:32px}
+  .toggle{display:flex;align-items:center;gap:11px;width:100%;min-height:52px;padding:0 4px;margin:4px 0 6px}
+  .toggle .box{
+    width:26px;height:26px;border-radius:8px;border:1.6px solid #DCCFB6;background:#fff;
+    display:grid;place-items:center;transition:background .2s,border-color .2s
+  }
+  .toggle .box svg{width:14px;height:14px;opacity:0;transition:opacity .18s}
+  .toggle.on .box{background:var(--forest);border-color:var(--forest)}
+  .toggle.on .box svg{opacity:1}
+  .sheet-actions{display:flex;gap:10px;margin-top:14px}
+  .sheet-actions .ghost{flex:0 0 34%;min-height:54px;border-radius:14px;border:1.5px solid var(--line);font-weight:700;color:var(--muted);background:#FBF7EF}
+  .sheet-actions .save{flex:1;min-height:54px;border-radius:14px;background:linear-gradient(180deg,#22513C,#173A2B);color:#FBF7EF;font-weight:700;font-size:16px}
+  .sheet-actions .danger{
+    width:100%;min-height:52px;border-radius:14px;border:1.5px solid #EBC9C3;
+    background:#FDF3F1;color:#8C1C27;font-weight:700;font-size:15px;margin-top:10px
+  }
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translate(-50%,14px);
+    background:#173A2B;color:#FBF7EF;font-size:13.5px;font-weight:600;
+    padding:11px 16px;border-radius:999px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;z-index:40;box-shadow:0 16px 30px -14px rgba(16,43,31,.6)
+  }
+  .toast.show,.toast.on{opacity:1;transform:translate(-50%,0)}
+
+  /* ---------- settings bits ---------- */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:0 14px 26px -26px rgba(26,38,32,.8)}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;border-bottom:1px solid #F5EEE1}
+  .row:last-child{border-bottom:0}
+  .row .t{font-size:15px}
+  .row .s{font-size:12px;color:var(--muted);margin-top:2px}
+  .linkbtn{font-size:14px;font-weight:700;color:var(--forest)}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important;transition:none!important}
+    .snow{display:none}
+  }
+
+  @media print{
+    .dock,.tabs,.sheet,.scrim,.toast,.addmini,.snow,.ribbon{display:none!important}
+    body{background:#fff}
+    body::before{display:none}
+    .hero{box-shadow:none;color:#000;background:#fff;border:1px solid #000}
+    .hero .num,.cap,.sub{color:#000}
+  }
+
+  /* ---------- app shell: one internal scroller, no page jump ---------- */
+  html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+  body{position:fixed;inset:0;width:100%;padding-bottom:0}
+  body::before{display:none}
+  .scroll{
+    position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;
+    padding-bottom:calc(152px + env(safe-area-inset-bottom));
+    background-image:
+      radial-gradient(circle at 10% 0%, rgba(201,162,39,.10), transparent 42%),
+      radial-gradient(circle at 92% 0%, rgba(124,31,43,.07), transparent 38%),
+      radial-gradient(rgba(26,38,32,.045) 1px, transparent 1px);
+    background-size:auto,auto,4px 4px;
+  }
+  .wrap{max-width:520px;margin:0 auto;padding:0 16px}
+  .dock{position:fixed}
+  .person.flash{animation:flashRing 1.8s ease-out}
+  @keyframes flashRing{
+    0%{box-shadow:0 0 0 0 rgba(201,162,39,.55)}
+    45%{box-shadow:0 0 0 6px rgba(201,162,39,.18)}
+    100%{box-shadow:0 16px 30px -26px rgba(26,38,32,.85)}
+  }
+  /* ---------- soft confetti ---------- */
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+  .cf{
+    position:absolute;border-radius:2px;opacity:0;
+    animation-name:cfFall;animation-timing-function:cubic-bezier(.2,.6,.4,1);
+    animation-fill-mode:forwards;will-change:transform,opacity
+  }
+  @keyframes cfFall{
+    0%{opacity:0;transform:translate3d(0,-6px,0) rotate(0deg) scale(.9)}
+    14%{opacity:1}
+    70%{opacity:.95}
+    100%{opacity:0;transform:translate3d(var(--dx,0px),118px,0) rotate(var(--rot,200deg)) scale(1)}
+  }
+  @media (prefers-reduced-motion: reduce){ #confetti{display:none} }
+</style>
+</head>
+<body>
+<noscript>
+  <div style="padding:20px;font-family:-apple-system,sans-serif;font-size:16px;line-height:1.5;background:#FBE9E7;color:#7A1A14">
+    <strong>This app needs JavaScript.</strong><br>
+    If you're seeing this, the page was opened in a preview that blocks scripts. Open the link in Safari or Chrome instead.
+  </div>
+</noscript>
+<div id="errbar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:#B4232B;color:#fff;font:600 14px/1.4 -apple-system,sans-serif;padding:10px 14px"></div>
+<script>
+  window.onerror = function(msg){
+    var b = document.getElementById("errbar");
+    if(b){ b.style.display = "block"; b.textContent = "Something went wrong: " + msg; }
+  };
+</script>
+
+<div class="scroll" id="scroller">
+
+<!-- ONBOARDING -->
+<div id="onboard" class="screen active">
+  <div class="wrap ob">
+    <div class="brand">Christmas Budget</div>
+    <h1>What's your<br>Christmas number?</h1>
+    <p>One total for the whole season: gifts, food, cards, everything. You can change it later.</p>
+    <div class="field money">
+      <span class="cur">$</span>
+      <input id="obBudget" type="text" inputmode="decimal" placeholder="600" aria-label="Total Christmas budget">
+    </div>
+    <div class="field">
+      <button class="primary" id="obStart">Start planning</button>
+    </div>
+    <button class="skip" id="obSkip">I'll set it later</button>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home" class="screen">
+  <div class="wrap">
+    <header>
+      <div class="brandline">
+        <div class="brand">Christmas Budget</div>
+        <div class="saved" id="savedHome">Saved</div>
+      </div>
+    </header>
+
+    <section class="hero" id="hero">
+      <svg class="hero-deco" viewBox="0 0 400 220" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <g stroke="#FCF8EC" stroke-width="1.2" fill="none" stroke-linecap="round">
+          <path d="M60 40v18M51 49h18M54 43l12 12M66 43L54 55"/>
+          <path d="M330 150v22M319 161h22M323 154l14 14M337 154l-14 14"/>
+          <path d="M250 30v14M243 37h14M246 33l8 8M254 33l-8 8"/>
+          <circle cx="120" cy="170" r="2.5"/><circle cx="200" cy="60" r="2"/><circle cx="300" cy="90" r="2"/>
+        </g>
+      </svg>
+      <div class="snow" aria-hidden="true"><i style="left:6%;animation-duration:14s;animation-delay:-2s;width:3px;height:3px;opacity:0.9"></i><i style="left:14%;animation-duration:18s;animation-delay:-7s;width:2px;height:2px;opacity:0.7"></i><i style="left:23%;animation-duration:12s;animation-delay:-4s;width:3px;height:3px;opacity:0.85"></i><i style="left:31%;animation-duration:20s;animation-delay:-9s;width:2px;height:2px;opacity:0.6"></i><i style="left:39%;animation-duration:15s;animation-delay:-1s;width:4px;height:4px;opacity:0.8"></i><i style="left:47%;animation-duration:17s;animation-delay:-6s;width:2px;height:2px;opacity:0.7"></i><i style="left:55%;animation-duration:13s;animation-delay:-3s;width:3px;height:3px;opacity:0.9"></i><i style="left:63%;animation-duration:19s;animation-delay:-8s;width:2px;height:2px;opacity:0.65"></i><i style="left:71%;animation-duration:16s;animation-delay:-5s;width:3px;height:3px;opacity:0.85"></i><i style="left:79%;animation-duration:12s;animation-delay:-2s;width:2px;height:2px;opacity:0.7"></i><i style="left:87%;animation-duration:18s;animation-delay:-10s;width:3px;height:3px;opacity:0.8"></i><i style="left:94%;animation-duration:15s;animation-delay:-6s;width:2px;height:2px;opacity:0.6"></i><i style="left:43%;animation-duration:21s;animation-delay:-11s;width:2px;height:2px;opacity:0.55"></i><i style="left:58%;animation-duration:22s;animation-delay:-13s;width:2px;height:2px;opacity:0.5"></i></div>
+      <div class="hero-top">
+        <div class="hero-tag">Christmas 2026</div>
+        <div class="hero-chip" id="heroChip">-- days</div>
+      </div>
+      <div class="cap" id="heroCap">Left to spend</div>
+      <div class="num" id="heroNum">Set a total</div>
+      <div class="sub" id="heroSub">Tap Settings to add your Christmas number</div>
+      <div class="bar"><span id="heroBar" style="width:0%"></span></div>
+      <div class="ribbon" aria-hidden="true"></div>
+    </section>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="k">Days left</div>
+        <div class="v" id="daysLeft">--</div>
+        <div class="n">to 25 December</div>
+      </div>
+      <div class="stat">
+        <div class="k">Still to buy</div>
+        <div class="v" id="stillToBuy">0</div>
+        <div class="n" id="boughtNote">0 bought</div>
+      </div>
+    </div>
+
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Next up</h2>
+        <button class="link" id="seeAll">See all</button>
+      </div>
+      <div id="homeList"></div>
+    </section>
+  </div>
+</div>
+
+<!-- LIST -->
+<div id="gifts" class="screen">
+  <div class="wrap">
+    <header>
+      <div class="brandline">
+        <div class="brand">Your list</div>
+        <div class="saved" id="savedGifts">Saved</div>
+      </div>
+      <div class="sec-head" style="margin-top:12px">
+        <h2 id="giftCount">0 people</h2>
+        <span style="font-size:14px;color:var(--muted)" id="giftTotal">$0 added</span>
+      </div>
+    </header>
+    <button class="addwide" id="addPersonBtn">+ Add someone</button>
+    <div id="giftList"></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings" class="screen">
+  <div class="wrap">
+    <header><div class="brandline"><div class="brand">Settings</div></div></header>
+
+    <div class="card">
+      <h3>Your total</h3>
+      <p>Everything is measured against this number.</p>
+      <div class="field money" style="margin-top:12px">
+        <span class="cur">$</span>
+        <input id="setBudget" type="text" inputmode="decimal" aria-label="Total Christmas budget">
+      </div>
+    </div>
+
+    <div class="card" style="padding:6px 16px">
+      <button class="btnline" id="exportBtn">Back up my data <span>Download file</span></button>
+      <button class="btnline" id="importBtn">Restore from a backup <span>Choose file</span></button>
+      <button class="btnline" id="printBtn">Print this list <span>Paper copy</span></button>
+    </div>
+
+    <div class="card">
+      <h3>How it works</h3>
+      <p>Give each person a limit, then add gifts under their name. Every gift comes off that person's limit and off your total at the same time, so you always know what is left for them and what is left overall.</p>
+      <p>Your list is saved on this device, in this browser. Nothing is uploaded and there is no account. If you clear your browser data the list goes with it, so use Back up my data before you switch phones.</p>
+    </div>
+
+    <div class="card">
+      <button class="danger" id="resetBtn">Start over with an empty list</button>
+    </div>
+
+    <p style="font-size:12.5px;color:var(--muted);text-align:center;padding:8px 0 4px">Christmas Budget &middot; works offline &middot; no account needed</p>
+  </div>
+</div>
+
+</div><!-- /scroller -->
+
+<div id="confetti" aria-hidden="true"></div>
+
+<!-- DOCK -->
+<div class="dock">
+  <div class="dock-inner">
+    <button class="primary" id="addBtn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Add a gift
+    </button>
+    <div class="tabs">
+      <button class="tab on" data-go="home">Home</button>
+      <button class="tab" data-go="gifts">List</button>
+      <button class="tab" data-go="settings">Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- ITEM SHEET -->
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="grab"></div>
+  <h2 id="sheetTitle">Add a gift</h2>
+  <p class="hint" id="sheetHint">Who is it for, and what does it cost?</p>
+
+  <div class="field">
+    <label for="fWho">Who</label>
+    <select id="fWho"></select>
+  </div>
+
+  <div class="field">
+    <label for="fItem">What <span style="text-transform:none;letter-spacing:0;font-weight:500">(optional)</span></label>
+    <input id="fItem" type="text" placeholder="Scarf" autocomplete="off" autocapitalize="sentences">
+  </div>
+
+  <div class="field money">
+    <label for="fAmt">Cost</label>
+    <span class="cur">$</span>
+    <input id="fAmt" type="text" inputmode="decimal" placeholder="40">
+  </div>
+
+  <div class="field money" id="fCapWrap" style="display:none">
+    <label for="fCap">Their limit</label>
+    <span class="cur">$</span>
+    <input id="fCap" type="text" inputmode="decimal" placeholder="300">
+  </div>
+
+  <button class="toggle" id="fBought">
+    <span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+    <span style="font-size:16px;font-weight:600">Already bought it</span>
+  </button>
+
+  <div class="sheet-actions">
+    <button class="ghost" id="cancelBtn">Cancel</button>
+    <button class="save" id="saveBtn">Save</button>
+  </div>
+  <button class="danger" id="fdeleteBtn" style="width:100%;text-align:center;display:none">Remove this gift</button>
+  <div style="height:8px"></div>
+</div>
+
+<!-- PERSON SHEET -->
+<div class="sheet" id="psheet" role="dialog" aria-modal="true" aria-labelledby="psheetTitle">
+  <div class="grab"></div>
+  <h2 id="psheetTitle">Person</h2>
+  <p class="hint" id="psheetHint">Change their name or their limit.</p>
+
+  <div class="field">
+    <label for="pName">Name</label>
+    <input id="pName" type="text" autocapitalize="words">
+  </div>
+
+  <div class="field money">
+    <label for="pCap">Limit for this person</label>
+    <span class="cur">$</span>
+    <input id="pCap" type="text" inputmode="decimal" placeholder="300">
+  </div>
+
+  <div class="sheet-actions">
+    <button class="ghost" id="pcancelBtn">Cancel</button>
+    <button class="save" id="psaveBtn">Save</button>
+  </div>
+  <button class="danger" id="pdeleteBtn" style="width:100%;text-align:center">Remove this person and their gifts</button>
+  <div style="height:8px"></div>
+</div>
+
+<div class="toast" id="toast">Saved</div>
+<input type="file" id="fileInput" accept="application/json" style="display:none">
+
+<script>
+(function(){
+  "use strict";
+  var KEY = "xmas-budget-v1";
+  var state = { budget:null, people:[], onboarded:false };
+
+  function uid(prefix){ return (prefix||"p") + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+  /* ---------- storage ---------- */
+  function load(){
+    try{
+      var raw = localStorage.getItem(KEY);
+      if(!raw) return;
+      var p = JSON.parse(raw);
+      if(!p || typeof p !== "object") return;
+      state.budget = (typeof p.budget === "number") ? p.budget : null;
+      state.onboarded = !!p.onboarded;
+      if(Array.isArray(p.people)){
+        state.people = p.people.map(normalizePerson);
+      } else if(Array.isArray(p.gifts)){
+        // migrate v1: one row per person with a single amount
+        state.people = p.gifts.map(function(g){
+          return {
+            id: uid("p"),
+            name: g.who || "Someone",
+            cap: null,
+            items: [{ id: uid("i"), label: "", amount: Number(g.amount)||0, bought: !!g.bought }]
+          };
+        });
+      }
+    }catch(e){}
+  }
+  function normalizePerson(p){
+    return {
+      id: p.id || uid("p"),
+      name: p.name || "Someone",
+      cap: (typeof p.cap === "number" && !isNaN(p.cap)) ? p.cap : null,
+      items: Array.isArray(p.items) ? p.items.map(function(it){
+        return { id: it.id || uid("i"), label: it.label || "", amount: Number(it.amount)||0, bought: !!it.bought };
+      }) : []
+    };
+  }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); flashSaved(); }catch(e){}
+  }
+  function flashSaved(){
+    ["savedHome","savedGifts"].forEach(function(id){
+      var el = document.getElementById(id); if(!el) return;
+      el.classList.add("show"); clearTimeout(el._t);
+      el._t = setTimeout(function(){ el.classList.remove("show"); }, 1400);
+    });
+  }
+
+  /* ---------- numbers ---------- */
+  function money(n){
+    if(n === null || n === undefined || isNaN(n)) return "$0";
+    var v = Math.round(n*100)/100;
+    return "$" + (v % 1 === 0 ? v.toLocaleString("en-US") : v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}));
+  }
+  function num(str){
+    if(str === null || str === undefined) return NaN;
+    var clean = String(str).replace(/[^0-9.]/g,"");
+    if(clean === "") return NaN;
+    var v = parseFloat(clean);
+    return isNaN(v) ? NaN : v;
+  }
+  function daysToXmas(){
+    var now = new Date();
+    var x = new Date(now.getFullYear(), 11, 25);
+    if(now > x) x = new Date(now.getFullYear()+1, 11, 25);
+    var ms = x - new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return Math.max(0, Math.round(ms/86400000));
+  }
+  function used(p){
+    return p.items.reduce(function(s,it){ return s + (Number(it.amount)||0); }, 0);
+  }
+  function boughtOf(p){
+    return p.items.reduce(function(s,it){ return s + (it.bought ? (Number(it.amount)||0) : 0); }, 0);
+  }
+  function totals(){
+    var added = 0, bought = 0, unbought = 0, openPeople = 0;
+    state.people.forEach(function(p){
+      added += used(p);
+      bought += boughtOf(p);
+      var open = p.items.filter(function(it){ return !it.bought; }).length;
+      unbought += open;
+      if(open > 0) openPeople++;
+    });
+    var left = (state.budget === null) ? null : state.budget - added;
+    return { added:added, bought:bought, unbought:unbought, openPeople:openPeople, left:left };
+  }
+  function personLeft(p){
+    if(p.cap === null) return null;
+    return p.cap - used(p);
+  }
+
+  /* ---------- render ---------- */
+  var scrollResetPending = false;
+  function render(){
+    var sc = document.getElementById("scroller");
+    var y = sc ? sc.scrollTop : 0;
+    renderHome(); renderList(); renderSettings(); renderTabs();
+    if(sc){
+      if(scrollResetPending){ scrollResetPending = false; sc.scrollTop = 0; }
+      else if(Math.abs(sc.scrollTop - y) > 1){ sc.scrollTop = y; }
+    }
+  }
+
+  function renderHome(){
+    var t = totals();
+    var hero = document.getElementById("hero");
+    var cap = document.getElementById("heroCap");
+    var numEl = document.getElementById("heroNum");
+    var sub = document.getElementById("heroSub");
+    var bar = document.getElementById("heroBar");
+
+    if(state.budget === null){
+      hero.classList.remove("over");
+      cap.textContent = "Left to spend";
+      numEl.textContent = "Set a total";
+      sub.textContent = "Tap Settings to add your Christmas number";
+      bar.style.width = "0%";
+    } else {
+      var left = t.left;
+      hero.classList.toggle("over", left < 0);
+      cap.textContent = left < 0 ? "Over budget" : "Left to spend";
+      numEl.textContent = money(Math.abs(left));
+      var pct = state.budget > 0 ? Math.min(100, Math.round((t.added/state.budget)*100)) : 0;
+      bar.style.width = pct + "%";
+      sub.textContent = left < 0
+        ? "Past your number by " + money(Math.abs(left))
+        : money(t.added) + " added of " + money(state.budget) + " \u00b7 " + pct + "%";
+    }
+
+    if(numEl.textContent !== numEl.dataset.last){
+      numEl.dataset.last = numEl.textContent;
+      numEl.classList.remove("pop");
+      void numEl.offsetWidth;
+      numEl.classList.add("pop");
+    }
+
+    var dd = daysToXmas();
+    document.getElementById("daysLeft").textContent = dd;
+    var chip = document.getElementById("heroChip");
+    if(chip) chip.textContent = dd === 0 ? "Christmas Day" : dd + (dd === 1 ? " day to go" : " days to go");
+    document.getElementById("stillToBuy").textContent = t.unbought;
+    document.getElementById("boughtNote").textContent = money(t.bought) + " bought";
+
+    var list = document.getElementById("homeList");
+    if(state.people.length === 0){
+      list.innerHTML = '<div class="empty"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#1E4A32" stroke-width="1.4" stroke-linecap="round"><path d="M12 2v20M4.5 6.5l15 11M19.5 6.5l-15 11M12 6l-2.5-2.5M12 6l2.5-2.5M12 18l-2.5 2.5M12 18l2.5 2.5"/></svg><h3>No one on the list yet</h3><p>Add a person, give them a limit, then add gifts under their name.</p></div>';
+    } else {
+      var open = state.people.filter(function(p){
+        return p.items.some(function(it){ return !it.bought; }) || (p.cap !== null && personLeft(p) > 0);
+      });
+      if(open.length === 0){
+        list.innerHTML = '<div class="empty"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#1E4A32" stroke-width="1.4" stroke-linecap="round"><path d="M12 2v20M4.5 6.5l15 11M19.5 6.5l-15 11M12 6l-2.5-2.5M12 6l2.5-2.5M12 18l-2.5 2.5M12 18l2.5 2.5"/></svg><h3>Everyone is bought for</h3><p>Nothing left to buy. Check the list before you walk into another shop.</p></div>';
+      } else {
+        list.innerHTML = open.slice(0,3).map(function(p){ return personCard(p, true); }).join("");
+      }
+    }
+  }
+
+  function initials(name){
+    var parts = String(name||"?").trim().split(/\s+/).filter(Boolean);
+    if(!parts.length) return "?";
+    if(parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+    return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+  }
+
+  function personCard(p, compact){
+    var u = used(p), left = personLeft(p);
+    var over = (left !== null && left < 0);
+    var pct = (p.cap && p.cap > 0) ? Math.min(100, Math.round(u/p.cap*100)) : 0;
+    var right, sub;
+    if(left === null){
+      right = money(u);
+      sub = "No limit set";
+    } else if(over){
+      right = money(Math.abs(left)) + " over";
+      sub = money(u) + " of " + money(p.cap);
+    } else {
+      right = money(left) + " left";
+      sub = money(u) + " of " + money(p.cap);
+    }
+    var items = p.items.slice().sort(function(a,b){ return (a.bought?1:0)-(b.bought?1:0); });
+    var rows = items.length ? items.map(function(it){
+      return '<button class="item ' + (it.bought?"done":"") + '" data-pid="' + p.id + '" data-iid="' + it.id + '">'
+        + '<span class="tick" data-tick="1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>'
+        + '<span class="lab">' + esc(it.label || (it.bought ? "Gift" : "Gift to buy")) + '</span>'
+        + '<span class="amt">' + money(it.amount) + '</span>'
+        + '</button>';
+    }).join("") : '<div class="item" style="border-bottom:0"><span class="lab" style="color:var(--muted)">No gifts yet</span></div>';
+
+    return '<div class="person ' + (over?"overcap":"") + '" data-person="' + p.id + '">'
+      + '<div class="p-top"><span class="avatar">' + esc(initials(p.name)) + '</span><button class="p-name" data-open="' + p.id + '">' + esc(p.name) + '</button>'
+      + '<span class="p-num">' + right + '</span></div>'
+      + '<div class="p-sub">' + sub + '</div>'
+      + '<div class="pbar"><span style="width:' + pct + '%"></span></div>'
+      + (compact ? "" : '<div class="items">' + rows + '</div>'
+          + '<button class="addmini" data-add="' + p.id + '">+ Add a gift for ' + esc(p.name) + '</button>')
+      + '</div>';
+  }
+
+  function renderList(){
+    var t = totals();
+    var n = state.people.length;
+    document.getElementById("giftCount").textContent = n + (n === 1 ? " person" : " people");
+    document.getElementById("giftTotal").textContent = money(t.added) + " added";
+    var list = document.getElementById("giftList");
+    if(n === 0){
+      list.innerHTML = '<div class="empty"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#1E4A32" stroke-width="1.4" stroke-linecap="round"><path d="M12 2v20M4.5 6.5l15 11M19.5 6.5l-15 11M12 6l-2.5-2.5M12 6l2.5-2.5M12 18l-2.5 2.5M12 18l2.5 2.5"/></svg><h3>No one on the list yet</h3><p>Tap Add someone, give them a limit, then add gifts under their name.</p></div>';
+      return;
+    }
+    var sorted = state.people.slice().sort(function(a,b){ return used(b) - used(a); });
+    list.innerHTML = sorted.map(function(p){ return personCard(p, false); }).join("");
+  }
+
+  function renderSettings(){
+    var el = document.getElementById("setBudget");
+    if(document.activeElement !== el) el.value = state.budget === null ? "" : String(state.budget);
+    // who list now lives in the gift sheet as a dropdown
+  }
+
+  var current = "home";
+  function renderTabs(){
+    document.querySelectorAll(".tab").forEach(function(t){
+      t.classList.toggle("on", t.getAttribute("data-go") === current);
+    });
+  }
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];
+    });
+  }
+  function go(name){
+    current = name;
+    document.querySelectorAll(".screen").forEach(function(s){ s.classList.remove("active"); });
+    var t = document.getElementById(name);
+    if(t) t.classList.add("active");
+    renderTabs();
+    var sc = document.getElementById("scroller");
+    scrollResetPending = true;
+    if(sc) sc.scrollTop = 0;
+  }
+
+  /* ---------- item sheet ---------- */
+  var sheet = document.getElementById("sheet");
+  var scrim = document.getElementById("scrim");
+  var editPersonId = null, editItemId = null, boughtDraft = false, pendingDraft = null;
+
+  function findPerson(id){
+    for(var i=0;i<state.people.length;i++){ if(state.people[i].id === id) return state.people[i]; }
+    return null;
+  }
+  function findPersonByName(name){
+    var n = String(name).trim().toLowerCase();
+    for(var i=0;i<state.people.length;i++){ if(state.people[i].name.trim().toLowerCase() === n) return state.people[i]; }
+    return null;
+  }
+
+  function openSheet(personId, itemId){
+    editPersonId = personId || null;
+    editItemId = itemId || null;
+    var p = editPersonId ? findPerson(editPersonId) : null;
+    var it = null;
+    if(p && editItemId){
+      for(var i=0;i<p.items.length;i++){ if(p.items[i].id === editItemId) it = p.items[i]; }
+    }
+    document.getElementById("sheetTitle").textContent = it ? "Edit gift" : "Add a gift";
+    document.getElementById("sheetHint").textContent = it ? "Change the details and save." : "Pick who it is for, then the cost.";
+    var sel = document.getElementById("fWho");
+    sel.innerHTML = state.people.map(function(pp){
+      return '<option value="' + pp.id + '">' + esc(pp.name) + '</option>';
+    }).join("") + '<option value="__new">+ Add someone new</option>';
+    if(p){ sel.value = p.id; }
+    else if(state.people.length){ sel.value = state.people[0].id; }
+    else { sel.value = "__new"; }
+    sel.disabled = false;
+    document.getElementById("fItem").value = it ? (it.label||"") : "";
+    document.getElementById("fAmt").value = it ? (it.amount||"") : "";
+    document.getElementById("fCapWrap").style.display = "none";
+    boughtDraft = it ? !!it.bought : false;
+    document.getElementById("fBought").classList.toggle("on", boughtDraft);
+    document.getElementById("fdeleteBtn").style.display = it ? "block" : "none";
+    sheet.classList.add("on"); scrim.classList.add("on");
+    setTimeout(function(){
+      if(p){ document.getElementById("fItem").focus(); } else { document.getElementById("fWho").focus(); }
+    }, 260);
+  }
+  function closeSheet(){
+    sheet.classList.remove("on"); scrim.classList.remove("on");
+    document.getElementById("fWho").disabled = false;
+    if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  }
+
+  function saveItem(){
+    var whoId = document.getElementById("fWho").value;
+    var label = document.getElementById("fItem").value.trim();
+    var amt = num(document.getElementById("fAmt").value);
+
+    if(whoId === "__new"){
+      pendingDraft = { label: label, amt: amt, bought: boughtDraft };
+      closeSheet();
+      openPerson(null);
+      return;
+    }
+    if(isNaN(amt)){ toast("Add a cost"); document.getElementById("fAmt").focus(); return; }
+
+    var p = editPersonId ? findPerson(editPersonId) : findPerson(whoId);
+    if(!p){ toast("Pick who it is for"); return; }
+
+    if(editItemId){
+      p.items = p.items.map(function(it){
+        return it.id === editItemId ? { id:it.id, label:label, amount:amt, bought:boughtDraft } : it;
+      });
+    } else {
+      p.items.push({ id: uid("i"), label: label, amount: amt, bought: boughtDraft });
+    }
+
+    save(); closeSheet(); render();
+    toast(editItemId ? "Updated" : "Added to " + p.name);
+  }
+
+  /* ---------- person sheet ---------- */
+  var psheet = document.getElementById("psheet");
+  var editingPerson = null;
+
+  function openPerson(personId){
+    var isNew = !personId;
+    var p = isNew ? null : findPerson(personId);
+    if(!isNew && !p) return;
+    editingPerson = isNew ? null : p.id;
+    document.getElementById("psheetTitle").textContent = isNew ? "Add someone" : (p.name || "Person");
+    document.getElementById("psheetHint").textContent = isNew
+      ? "A name and a limit is all you need. Gifts go under them after."
+      : "Change their name or their limit.";
+    document.getElementById("pName").value = isNew ? "" : (p.name || "");
+    document.getElementById("pCap").value = (!isNew && p.cap !== null) ? String(p.cap) : "";
+    document.getElementById("pdeleteBtn").style.display = isNew ? "none" : "block";
+    psheet.classList.add("on"); scrim.classList.add("on");
+    setTimeout(function(){ document.getElementById("pName").focus(); }, 260);
+  }
+  function closePerson(){ psheet.classList.remove("on"); scrim.classList.remove("on"); }
+
+  function savePerson(){
+    var name = document.getElementById("pName").value.trim();
+    var capVal = num(document.getElementById("pCap").value);
+    if(name === ""){ toast("Add a name"); document.getElementById("pName").focus(); return; }
+
+    if(!editingPerson){
+      var dup = findPersonByName(name);
+      if(dup){ toast(dup.name + " is already on the list"); return; }
+      var np = { id: uid("p"), name: name, cap: isNaN(capVal) ? null : capVal, items: [] };
+      state.people.push(np);
+      save(); closePerson(); render(); go("gifts");
+      setTimeout(function(){
+        var el = document.querySelector('[data-person="' + np.id + '"]');
+        if(el){
+          el.classList.add("flash");
+          try { el.scrollIntoView({block:"center", behavior:"smooth"}); } catch(err){}
+          setTimeout(function(){ el.classList.remove("flash"); }, 1900);
+        }
+      }, 80);
+      if(pendingDraft){
+        var d = pendingDraft; pendingDraft = null;
+        openSheet(np.id, null);
+        document.getElementById("fItem").value = d.label || "";
+        document.getElementById("fAmt").value = isNaN(d.amt) ? "" : String(d.amt);
+        boughtDraft = !!d.bought;
+        document.getElementById("fBought").classList.toggle("on", boughtDraft);
+      } else {
+        toast(name + " added");
+      }
+      return;
+    }
+
+    var p = findPerson(editingPerson); if(!p) return;
+    p.name = name;
+    p.cap = isNaN(capVal) ? null : capVal;
+    save(); closePerson(); render(); toast("Saved");
+  }
+
+  /* ---------- toast ---------- */
+  var toastEl = document.getElementById("toast"), toastT;
+  function confetti(rect, count){
+    if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var host = document.getElementById("confetti");
+    if(!host) return;
+    count = count || 22;
+    var w = window.innerWidth;
+    var cx = rect ? rect.left + rect.width/2 : w/2;
+    var cy = rect ? rect.top + 26 : Math.round(window.innerHeight * 0.4);
+    var spread = rect ? Math.min(rect.width * 0.86, 300) : 260;
+    var colors = ["#E3C97F","#C9A227","#A3242E","#1F4A37","#FBF7EF","#7C1F2B"];
+    for(var i=0;i<count;i++){
+      var bit = document.createElement("i");
+      var size = 5 + Math.random()*5;
+      bit.className = "cf";
+      bit.style.left = Math.round(cx + (Math.random()-0.5)*spread) + "px";
+      bit.style.top = Math.round(cy + (Math.random()-0.5)*14) + "px";
+      bit.style.width = size + "px";
+      bit.style.height = Math.max(3, size*0.62) + "px";
+      bit.style.background = colors[i % colors.length];
+      bit.style.animationDelay = (Math.random()*0.2).toFixed(2) + "s";
+      bit.style.animationDuration = (1.15 + Math.random()*0.75).toFixed(2) + "s";
+      bit.style.setProperty("--dx", Math.round((Math.random()-0.5)*120) + "px");
+      bit.style.setProperty("--rot", Math.round(140 + Math.random()*220) + "deg");
+      host.appendChild(bit);
+      (function(node){
+        setTimeout(function(){ if(node && node.parentNode) node.parentNode.removeChild(node); }, 2300);
+      })(bit);
+    }
+  }
+
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("on");
+    clearTimeout(toastT);
+    toastT = setTimeout(function(){ toastEl.classList.remove("on"); }, 1600);
+  }
+
+  /* ---------- events ---------- */
+  document.getElementById("obStart").addEventListener("click", function(){
+    var v = num(document.getElementById("obBudget").value);
+    state.budget = isNaN(v) ? null : v;
+    state.onboarded = true; save(); go("home"); render();
+  });
+  document.getElementById("obSkip").addEventListener("click", function(){
+    state.onboarded = true; save(); go("home"); render();
+  });
+  document.getElementById("obBudget").addEventListener("keydown", function(e){
+    if(e.key === "Enter") document.getElementById("obStart").click();
+  });
+
+  document.querySelectorAll(".tab").forEach(function(t){
+    t.addEventListener("click", function(){ go(t.getAttribute("data-go")); });
+  });
+  document.getElementById("seeAll").addEventListener("click", function(){ go("gifts"); });
+  document.getElementById("addBtn").addEventListener("click", function(){
+    if(!state.people.length){ toast("Add someone first"); openPerson(null); return; }
+    openSheet(null,null);
+  });
+  document.getElementById("addPersonBtn").addEventListener("click", function(){ openPerson(null); });
+  document.getElementById("cancelBtn").addEventListener("click", closeSheet);
+  document.getElementById("saveBtn").addEventListener("click", saveItem);
+  document.getElementById("pcancelBtn").addEventListener("click", closePerson);
+  document.getElementById("psaveBtn").addEventListener("click", savePerson);
+  document.getElementById("pdeleteBtn").addEventListener("click", function(){
+    var p = findPerson(editingPerson); if(!p) return;
+    if(confirm("Remove " + p.name + " and their gifts from the list?")){
+      state.people = state.people.filter(function(x){ return x.id !== p.id; });
+      save(); closePerson(); render(); toast("Removed");
+    }
+  });
+  scrim.addEventListener("click", function(){ closeSheet(); closePerson(); });
+
+  document.getElementById("fdeleteBtn").addEventListener("click", function(){
+    var p = findPerson(editPersonId); if(!p || !editItemId) return;
+    var it = null;
+    p.items.forEach(function(x){ if(x.id === editItemId) it = x; });
+    var label = it && it.label ? it.label : "this gift";
+    if(confirm("Remove " + label + " from " + p.name + "?")){
+      p.items = p.items.filter(function(x){ return x.id !== editItemId; });
+      save(); closeSheet(); render(); toast("Removed");
+    }
+  });
+
+  document.getElementById("fBought").addEventListener("click", function(){
+    boughtDraft = !boughtDraft;
+    this.classList.toggle("on", boughtDraft);
+  });
+  document.getElementById("fAmt").addEventListener("keydown", function(e){ if(e.key === "Enter") saveItem(); });
+  document.getElementById("fWho").addEventListener("change", function(){
+    if(this.value === "__new"){
+      pendingDraft = {
+        label: document.getElementById("fItem").value.trim(),
+        amt: num(document.getElementById("fAmt").value),
+        bought: boughtDraft
+      };
+      closeSheet();
+      openPerson(null);
+    }
+  });
+
+  document.addEventListener("click", function(e){
+    var t = e.target;
+    var openBtn = t.closest ? t.closest("[data-open]") : null;
+    if(openBtn){ openPerson(openBtn.getAttribute("data-open")); return; }
+    var addBtn = t.closest ? t.closest("[data-add]") : null;
+    if(addBtn){ openSheet(addBtn.getAttribute("data-add"), null); return; }
+    var item = t.closest ? t.closest(".item") : null;
+    if(item){
+      var pid = item.getAttribute("data-pid"), iid = item.getAttribute("data-iid");
+      var person = findPerson(pid);
+      if(!person) return;
+      var target = null;
+      person.items.forEach(function(it){ if(it.id === iid) target = it; });
+      if(!target) return;
+      if(t.closest(".tick")){
+        var wasDone = person.items.length > 0 && person.items.every(function(x){ return x.bought; });
+        target.bought = !target.bought; save(); render();
+        var isDone = person.items.length > 0 && person.items.every(function(x){ return x.bought; });
+        var allDone = state.people.length > 0 && state.people.every(function(pp){
+          return pp.items.length > 0 && pp.items.every(function(x){ return x.bought; });
+        });
+        if(isDone && !wasDone){
+          var cardEl = document.querySelector('[data-person="' + person.id + '"]');
+          confetti(cardEl ? cardEl.getBoundingClientRect() : null, 20);
+          toast(allDone ? "Everyone's bought. Go put your feet up." : "All bought for " + person.name);
+        } else {
+          toast(target.bought ? "Marked as bought" : "Back on the list");
+        }
+      } else {
+        openSheet(pid, iid);
+      }
+      return;
+    }
+    var card = t.closest ? t.closest(".person") : null;
+    if(card && !t.closest("button")){ openPerson(card.getAttribute("data-person")); }
+  });
+
+  document.getElementById("setBudget").addEventListener("input", function(){
+    var v = num(this.value);
+    state.budget = isNaN(v) ? null : v;
+    save(); renderHome();
+  });
+
+  document.getElementById("exportBtn").addEventListener("click", function(){
+    var blob = new Blob([JSON.stringify(state, null, 2)], { type:"application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "christmas-budget-backup.json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    toast("Backup downloaded");
+  });
+  document.getElementById("importBtn").addEventListener("click", function(){
+    document.getElementById("fileInput").click();
+  });
+  document.getElementById("fileInput").addEventListener("change", function(e){
+    var f = e.target.files && e.target.files[0];
+    if(!f) return;
+    var r = new FileReader();
+    r.onload = function(){
+      try{
+        var p = JSON.parse(r.result);
+        var people = Array.isArray(p.people) ? p.people : (Array.isArray(p.gifts) ? null : []);
+        if(!p || typeof p !== "object" || (!Array.isArray(p.people) && !Array.isArray(p.gifts))) throw new Error("bad");
+        state.budget = (typeof p.budget === "number") ? p.budget : null;
+        state.people = people ? people.map(normalizePerson) : p.gifts.map(function(g){
+          return { id: uid("p"), name: g.who || "Someone", cap: null,
+                   items: [{ id: uid("i"), label:"", amount: Number(g.amount)||0, bought: !!g.bought }] };
+        });
+        state.onboarded = true;
+        save(); render(); toast("Restored");
+      }catch(err){ toast("That file didn't look right"); }
+    };
+    r.readAsText(f);
+    e.target.value = "";
+  });
+  document.getElementById("printBtn").addEventListener("click", function(){ window.print(); });
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    if(confirm("Clear the whole list and start again?")){
+      state = { budget:null, people:[], onboarded:true };
+      save(); render(); go("home"); toast("Cleared");
+    }
+  });
+
+  /* ---------- boot ---------- */
+  load();
+  if(state.onboarded){ document.getElementById("onboard").classList.remove("active"); go("home"); }
+  render();
+
+  window.__app = {
+    state: state,
+    totals: totals, money: money, num: num, used: used, personLeft: personLeft,
+    budgetLeft: function(){ return state.budget === null ? null : state.budget - totals().added; },
+    save: save, render: render, findPersonByName: findPersonByName, go: go, confetti: confetti
+  };
+})();
+</script>
+</body>
+</html>
